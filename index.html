@@ -838,6 +838,8 @@
         const langFlag = langObj ? `<span title="${langObj.label}" style="font-size:1.1rem;">${langObj.flag}</span>` : '';
         // Tag
         const tagLabels = item.tags || '';
+        // Link (mostra sempre se presente)
+        const linkHtml = item.link ? `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:6px;font-size:1.1rem;color:#00eaff;text-decoration:underline;">🔗 Link</a>` : '';
         // Card
         const card = document.createElement('li');
         card.className = 'content-card';
@@ -848,6 +850,7 @@
               <div class="card-title">${item.titolo || ''}</div>
               <div class="card-meta">${langFlag} <span>${item.tipo || ''}</span></div>
               <div class="card-tags">${tagLabels}</div>
+              ${linkHtml}
             </div>
           </div>
         `;
@@ -871,10 +874,10 @@
       if (item.link) {
         const ytThumb = getYoutubeThumbnail(item.link);
         if (ytThumb) {
-          preview = `<img src="${ytThumb}" alt="Anteprima YouTube" style="max-width:300px;" />`;
-        } else {
-          preview = `<a href="${item.link}" target="_blank" rel="noopener noreferrer">Vai al link</a>`;
+          preview = `<img src="${ytThumb}" alt="Anteprima YouTube" style="max-width:300px;" /><br>`;
         }
+        // Mostra sempre il link cliccabile sotto la preview
+        preview += `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;font-size:1.13rem;color:#00eaff;text-decoration:underline;">🔗 Vai al link</a>`;
       }
       // Bandierina lingua
       const langObj = LANGS.find(l => l.code === item.lang);
