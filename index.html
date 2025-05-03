@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hyperion - Libreria Creativa Spaziale</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Roboto:wght@400;700&family=Audiowide&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0; padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 70% 30%, #2d1e60 0%, #0a0826 100%);
+      overflow-x: hidden;
+      position: relative;
+    }
+    /* Stelle animate */
+    .stars {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      top: 0; left: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .container {
+      max-width: 750px;
+      margin: 40px auto;
+      background: rgba(30, 30, 60, 0.85);
+      padding: 32px 24px 24px 24px;
+      border-radius: 18px;
+      box-shadow: 0 4px 32px #0008, 0 0 0 2px #3a2e7a44;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(2px);
+    }
+    h1 {
+      font-family: 'Audiowide', 'Orbitron', Arial, sans-serif;
+      font-size: 2.7rem;
+      text-align: center;
+      color: #fff;
+      letter-spacing: 0.13em;
+      text-shadow: 0 0 18px #7f7fff, 0 0 36px #00eaff99;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    h2 {
+      color: #b6aaff;
+      font-family: 'Orbitron', Arial, sans-serif;
+      text-shadow: 0 0 8px #7f7fff88;
+      margin-top: 0;
+    }
+    input, textarea, select, button {
+      margin: 7px 0;
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 7px;
+      border: none;
+      font-size: 1rem;
+      background: #18183a;
+      color: #fff;
+      outline: none;
+      transition: box-shadow 0.2s;
+    }
+    input:focus, textarea:focus {
+      box-shadow: 0 0 8px #00eaff88;
+    }
+    input[type="file"] { background: none; color: #fff; }
+    button {
+      background: linear-gradient(90deg, #3a2e7a 0%, #00eaff 100%);
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #00eaff44;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #00eaff 0%, #3a2e7a 100%);
+      box-shadow: 0 0 24px #00eaff88;
+    }
+    .content-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 22px;
+      padding: 0;
+      margin: 0 0 24px 0;
+      list-style: none;
+    }
+    .content-card {
+      background: rgba(44, 44, 88, 0.92);
+      border-radius: 13px;
+      box-shadow: 0 2px 12px #0003;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.18s, box-shadow 0.18s;
+      display: flex;
+      flex-direction: column;
+      min-height: 260px;
+    }
+    .content-card:hover {
+      transform: scale(1.04);
+      box-shadow: 0 6px 32px #00eaff55;
+      z-index: 2;
+    }
+    .card-thumb {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background: #23234a;
+      display: block;
+    }
+    .card-info {
+      padding: 13px 12px 10px 12px;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 1.08rem;
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 4px;
+      text-shadow: 0 0 6px #00eaff33;
+      min-height: 36px;
+    }
+    .card-meta {
+      font-size: 0.98rem;
+      color: #b6aaff;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .card-tags {
+      font-size: 0.85rem;
+      color: #00eaff;
+      margin-bottom: 4px;
+      min-height: 18px;
+    }
+    .card-remove {
+      background: #ff4f4f;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 7px;
+      align-self: flex-end;
+      transition: background 0.2s;
+    }
+    .card-remove:hover {
+      background: #ff0000;
+    }
+    .detail {
+      border: 1px solid #3a2e7a44;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      background: rgba(30, 30, 60, 0.95);
+      box-shadow: 0 2px 16px #00eaff22;
+      color: #fff;
+    }
+    .preview { margin-top: 14px; }
+    .filters input {
+      width: 23%;
+      display: inline-block;
+      margin-right: 1%;
+      background: #18183a;
+      color: #fff;
+      border: 1px solid #3a2e7a44;
+    }
+    .filters button {
+      width: auto;
+      padding: 10px 18px;
+      margin-left: 5px;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 10px; }
+      .filters input { width: 100%; margin-bottom: 5px; }
+      .content-list {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+      }
+      .card-thumb { height: 80px; }
+    }
+    /* Glow per errori */
+    #uploadError { text-shadow: 0 0 8px #ff0080, 0 0 2px #fff; }
+    /* Glow per link */
+    a { color: #00eaff; text-shadow: 0 0 4px #00eaff88; }
+    .tag-pill {
+      display: inline-block;
+      padding: 7px 14px;
+      border-radius: 20px;
+      background: #23234a;
+      color: #00eaff;
+      border: 1.5px solid #00eaff;
+      font-size: 0.98rem;
+      cursor: pointer;
+      user-select: none;
+      margin-bottom: 3px;
+      transition: background 0.2s, color 0.2s, border 0.2s;
+    }
+    .tag-pill.selected {
+      background: #00eaff;
+      color: #18183a;
+      border: 1.5px solid #fff;
+      font-weight: bold;
+      box-shadow: 0 0 8px #00eaff88;
+    }
+    .tag-pill.altro {
+      background: #ffb347;
+      color: #23234a;
+      border: 1.5px solid #ffb347;
+      font-weight: bold;
+      box-shadow: 0 0 8px #ffb34788;
+    }
+    .tag-pill.altro.selected {
+      background: #fff;
+      color: #ffb347;
+      border: 1.5px solid #ffb347;
+      font-weight: bold;
+      box-shadow: 0 0 8px #ffb34788;
+    }
+  </style>
+</head>
+<body>
+  <canvas class="stars"></canvas>
+  <div class="container">
+    <h1>Hyperion</h1>
+    <div style="text-align:center; color:#b6aaff; font-family:'Orbitron',Arial,sans-serif; font-size:1.25rem; margin-bottom:28px; text-shadow:0 0 8px #00eaff55;">
+      Uno spazio per fare luce sui contenuti che trasformano la formazione
+    </div>
+    <div id="mainMenu" style="text-align:center; margin-top:40px;">
+      <button id="btnUpload" style="font-size:1.2rem; width:60%; margin:20px auto; display:block;">Carica un contenuto</button>
+      <button id="btnLibrary" style="font-size:1.2rem; width:60%; margin:20px auto; display:block;">Visualizza la libreria</button>
+      <button id="btnIstruzioni" style="font-size:1.1rem; width:60%; margin:20px auto; display:block; background:#23234a; color:#00eaff; border:1.5px solid #00eaff;">Istruzioni</button>
+      <div style="text-align:center; color:#b6aaff; font-size:1.05rem; margin-top:10px; letter-spacing:0.02em; opacity:0.85;">
+        created with love <span style="color:#ff4f4f;">❤️</span> da Matteo
+      </div>
+    </div>
+    <form id="uploadForm" style="display:none;">
+      <button type="button" id="backToMenu1" style="margin-bottom:15px; width:auto;">&larr; Torna al menu</button>
+      <h2>Carica nuovo contenuto</h2>
+      <input type="text" id="author" placeholder="Nome e Cognome di chi carica" required />
+      <input type="text" id="title" placeholder="Titolo" required />
+      <textarea id="description" placeholder="Descrizione" required></textarea>
+      <select id="type" required>
+        <option value="">Seleziona tipologia</option>
+        <option value="image">Immagine</option>
+        <option value="video">Video</option>
+        <option value="music">Musica</option>
+        <option value="audio">Audio</option>
+        <option value="text">Testo</option>
+      </select>
+      <label for="tags" style="color:#b6aaff; font-family:'Orbitron',Arial,sans-serif; margin-top:10px;">Tag (seleziona uno o più):</label>
+      <div id="tagsPills" style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px;"></div>
+      <input type="hidden" id="tags" />
+      <!-- Selezione lingua -->
+      <div style="margin-bottom:10px;">
+        <span id="langLabel" style="color:#b6aaff; font-family:'Orbitron',Arial,sans-serif;">Lingua:</span>
+        <div id="langFlags" style="display:flex; gap:10px; margin-top:5px;">
+          <!-- Bandierine inserite via JS -->
+        </div>
+        <input type="hidden" id="lang" />
+      </div>
+      <input type="url" id="link" placeholder="Incolla qui un link (YouTube, Google Drive, ecc.)" style="margin-bottom:10px;" />
+      <button type="submit">Carica</button>
+      <div id="uploadError" style="color:#ff0080;"></div>
+    </form>
+
+    <div id="librarySection" style="display:none;">
+      <button type="button" id="backToMenu2" style="margin-bottom:15px; width:auto;">&larr; Torna al menu</button>
+      <div class="filters" style="margin: 20px 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+        <input type="text" id="filterSearch" placeholder="Cerca per parola chiave..." style="flex:2; min-width:160px;" />
+        <select id="filterType" style="flex:1; min-width:120px;">
+          <option value="">Tutte le tipologie</option>
+          <option value="image">Immagine</option>
+          <option value="video">Video</option>
+          <option value="music">Musica</option>
+          <option value="audio">Audio</option>
+          <option value="text">Testo</option>
+        </select>
+        <select id="filterTag" style="flex:1; min-width:120px;">
+          <option value="">Tutti i tag</option>
+        </select>
+        <button onclick="applyFilters()">Filtra</button>
+      </div>
+      <ul class="content-list" id="contentList"></ul>
+      <div id="contentDetail"></div>
+    </div>
+
+    <!-- Pagina istruzioni -->
+    <div id="istruzioniPage" style="display:none;">
+      <button type="button" id="backToMenuIstruzioni" style="margin-bottom:15px; width:auto;">&larr; Torna al menu</button>
+      <h2>Istruzioni</h2>
+      <div id="istruzioniContent" style="color:#fff; font-size:1.08rem; line-height:1.7; background:rgba(44,44,88,0.85); border-radius:12px; padding:22px 18px; min-height:120px; box-shadow:0 2px 12px #0003;">
+        <span style="font-size:1.25rem; color:#ffe680;">✨ La missione di Hyperion</span><br><br>
+        Hyperion è uno spazio collettivo dove raccogliamo contenuti formativi e ispirazionali per chi progetta e sviluppa percorsi di apprendimento.<br><br>
+        Ogni contributo — che sia un articolo, un video, una riflessione, uno strumento, una citazione o una storia — è un possibile innesco creativo per costruire esperienze di apprendimento più ricche, vive e significative.<br><br>
+        <span style="font-size:1.15rem; color:#00eaff;">🚀 Condividi un contenuto – Accendi una nuova stella</span><br>
+        Vai su <b>"Carica un contenuto"</b> nel menu principale.<br><br>
+        Compila i campi richiesti:<br>
+        <span style="margin-left:18px; display:inline-block;">🔹 Nome e cognome<br>
+        🔹 Titolo<br>
+        🔹 Descrizione (puoi inserire note, timestamp, testi, ecc.)<br>
+        🔹 Tipologia<br>
+        🔹 Tag<br>
+        🔹 Lingua</span><br><br>
+        (Facoltativo) Aggiungi un link: video, documento, risorsa online... oppure lascia vuoto.<br><br>
+        Clicca su <b>"Carica"</b> e invia il tuo raggio nella biblioteca celeste.<br><br>
+        <span style="font-size:1.15rem; color:#b6aaff;">🔍 Esplora la libreria – Viaggia tra le costellazioni del sapere</span><br>
+        Clicca su <b>"Visualizza la libreria"</b>.<br>
+        Filtra per parola chiave, tipologia o tag.<br>
+        Apri una card e lasciati ispirare.<br><br>
+        <span style="font-size:1.08rem; color:#ffb347;">🌓 Vuoi rimuovere un contenuto?</span><br>
+        Scrivi a Matteo, indicando titolo e autore del contenuto da rimuovere.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Stelle animate
+    const canvas = document.querySelector('.stars');
+    const ctx = canvas.getContext('2d');
+    let w = window.innerWidth, h = window.innerHeight;
+    let stars = Array.from({length: 120}, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.2 + 0.3,
+      d: Math.random() * 0.5 + 0.2
+    }));
+
+    // --- Pianeti animati ---
+    const planetColors = [
+      '#00eaff', // azzurro
+      '#ff7fff', // rosa
+      '#ffb347', // arancione
+      '#7fff7f', // verde
+      '#b6aaff', // viola chiaro
+      '#fff',    // bianco
+      '#ff4f4f', // rosso
+    ];
+    let planets = Array.from({length: 7}, (_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const orbitRadius = 80 + i * 60 + Math.random() * 40;
+      return {
+        baseX: w/2 + (Math.random()-0.5)*w*0.5,
+        baseY: h/2 + (Math.random()-0.5)*h*0.5,
+        orbitRadius,
+        angle,
+        speed: 0.0007 + Math.random()*0.0007,
+        r: 12 + Math.random()*16,
+        color: planetColors[i % planetColors.length],
+        orbitTilt: Math.random()*Math.PI/2,
+        saturn: i < 2 // I primi 2 pianeti saranno "Saturno"
+      };
+    });
+
+    // Razzi fluttuanti
+    let rockets = Array.from({length: 2}, (_, i) => {
+      const angle = Math.random() * Math.PI * 2;
+      const orbitRadius = 180 + i * 120 + Math.random() * 60;
+      return {
+        baseX: w/2 + (Math.random()-0.5)*w*0.7,
+        baseY: h/2 + (Math.random()-0.5)*h*0.7,
+        orbitRadius,
+        angle,
+        speed: 0.0004 + Math.random()*0.0005,
+        size: 38 + Math.random()*18,
+        direction: Math.random() > 0.5 ? 1 : -1
+      };
+    });
+
+    // --- Meteore ---
+    let meteors = Array.from({length: 5}, () => createMeteor());
+    function createMeteor() {
+      const angle = Math.random() * Math.PI / 3 + Math.PI / 5; // Tra 36° e 96°
+      const speed = 0.7 + Math.random() * 0.5; // Più lente
+      const len = 80 + Math.random() * 60;
+      const x = Math.random() * w;
+      const y = Math.random() * h * 0.7;
+      return {
+        x, y, angle, speed, len,
+        alpha: 0.32 + Math.random() * 0.18, // Più trasparenti
+        width: 1.1 + Math.random() * 0.7    // Più sottili
+      };
+    }
+
+    // --- Astronauta ---
+    let astronaut = {
+      x: w * 0.8,
+      y: h * 0.18,
+      vx: 0.08 + Math.random()*0.07,
+      vy: 0.04 + Math.random()*0.05,
+      angle: Math.random()*Math.PI*2,
+      vangle: 0.002 + Math.random()*0.002
+    };
+
+    function drawAstronaut(ctx, x, y, scale, angle) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.scale(scale, scale);
+      // Corpo
+      ctx.beginPath();
+      ctx.ellipse(0, 18, 10, 18, 0, 0, 2*Math.PI);
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = '#b6aaff';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.closePath();
+      // Casco
+      ctx.beginPath();
+      ctx.arc(0, -6, 12, 0, 2*Math.PI);
+      ctx.fillStyle = '#e0f7fa';
+      ctx.shadowColor = '#00eaff';
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      ctx.closePath();
+      // Visiera
+      ctx.beginPath();
+      ctx.arc(0, -6, 8, Math.PI*0.15, Math.PI*0.85);
+      ctx.strokeStyle = '#00eaff';
+      ctx.lineWidth = 2.5;
+      ctx.shadowBlur = 0;
+      ctx.stroke();
+      ctx.closePath();
+      // Zaino
+      ctx.beginPath();
+      ctx.rect(-8, 10, 16, 10);
+      ctx.fillStyle = '#b6aaff';
+      ctx.shadowBlur = 0;
+      ctx.fill();
+      ctx.closePath();
+      // Braccia
+      ctx.beginPath();
+      ctx.moveTo(-10, 0); ctx.lineTo(-18, 12);
+      ctx.moveTo(10, 0); ctx.lineTo(18, 12);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.closePath();
+      // Gambe
+      ctx.beginPath();
+      ctx.moveTo(-6, 32); ctx.lineTo(-10, 44);
+      ctx.moveTo(6, 32); ctx.lineTo(10, 44);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.closePath();
+      ctx.restore();
+    }
+
+    function resizeStars() {
+      w = window.innerWidth; h = window.innerHeight;
+      canvas.width = w; canvas.height = h;
+      // Aggiorna anche le orbite dei pianeti
+      planets.forEach((p, i) => {
+        p.baseX = w/2 + (Math.random()-0.5)*w*0.5;
+        p.baseY = h/2 + (Math.random()-0.5)*h*0.5;
+      });
+      rockets.forEach((r, i) => {
+        r.baseX = w/2 + (Math.random()-0.5)*w*0.7;
+        r.baseY = h/2 + (Math.random()-0.5)*h*0.7;
+      });
+      // Aggiorna meteore
+      meteors = Array.from({length: 5}, () => createMeteor());
+      // Riposiziona astronauta
+      astronaut.x = w * 0.8;
+      astronaut.y = h * 0.18;
+    }
+    window.addEventListener('resize', resizeStars);
+    resizeStars();
+    function drawStars() {
+      ctx.clearRect(0,0,w,h);
+      ctx.save();
+      // Stelle
+      for (let s of stars) {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fff8';
+        ctx.shadowColor = '#00eaff';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.closePath();
+        // Movimento lento
+        s.x += s.d * 0.2;
+        s.y += s.d * 0.1;
+        if (s.x > w) s.x = 0;
+        if (s.y > h) s.y = 0;
+      }
+      // --- Meteore ---
+      for (let m of meteors) {
+        ctx.save();
+        ctx.globalAlpha = m.alpha;
+        ctx.strokeStyle = '#ffe680';
+        ctx.shadowColor = '#ffe680';
+        ctx.shadowBlur = 18;
+        ctx.lineWidth = m.width;
+        ctx.beginPath();
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(m.x - Math.cos(m.angle)*m.len, m.y - Math.sin(m.angle)*m.len);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+        // Movimento
+        m.x += Math.cos(m.angle) * m.speed;
+        m.y += Math.sin(m.angle) * m.speed;
+        if (m.x < -m.len || m.y > h + m.len || m.y < -m.len || m.x > w + m.len) {
+          Object.assign(m, createMeteor());
+        }
+      }
+      // Pianeti
+      for (let p of planets) {
+        // Orbita ellittica
+        const x = p.baseX + Math.cos(p.angle) * p.orbitRadius;
+        const y = p.baseY + Math.sin(p.angle) * p.orbitRadius * Math.cos(p.orbitTilt);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, p.r, 0, 2 * Math.PI);
+        ctx.fillStyle = p.color + 'cc';
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 18;
+        ctx.fill();
+        ctx.closePath();
+        // Se è "Saturno", disegna l'anello
+        if (p.saturn) {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(p.orbitTilt + 0.5); // inclina l'anello
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.r*1.7, p.r*0.6, 0, 0, 2*Math.PI);
+          ctx.strokeStyle = '#ffe680cc';
+          ctx.lineWidth = 4;
+          ctx.shadowColor = '#ffe680';
+          ctx.shadowBlur = 8;
+          ctx.stroke();
+          ctx.closePath();
+          ctx.restore();
+        }
+        ctx.restore();
+        // Aggiorna angolo
+        p.angle += p.speed;
+        if (p.angle > Math.PI*2) p.angle -= Math.PI*2;
+      }
+      // Razzi
+      for (let r of rockets) {
+        const x = r.baseX + Math.cos(r.angle) * r.orbitRadius;
+        const y = r.baseY + Math.sin(r.angle) * r.orbitRadius * 0.7;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(r.angle + (r.direction > 0 ? 0 : Math.PI));
+        // Corpo razzo
+        ctx.beginPath();
+        ctx.moveTo(0, -r.size*0.5); // punta
+        ctx.lineTo(r.size*0.22, r.size*0.3);
+        ctx.lineTo(-r.size*0.22, r.size*0.3);
+        ctx.closePath();
+        ctx.fillStyle = '#fff';
+        ctx.shadowColor = '#00eaff';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        // Finestra
+        ctx.beginPath();
+        ctx.arc(0, -r.size*0.18, r.size*0.13, 0, 2*Math.PI);
+        ctx.fillStyle = '#00eaff';
+        ctx.shadowBlur = 0;
+        ctx.fill();
+        // Fiamma
+        ctx.beginPath();
+        ctx.moveTo(0, r.size*0.3);
+        ctx.lineTo(r.size*0.09, r.size*0.55);
+        ctx.lineTo(-r.size*0.09, r.size*0.55);
+        ctx.closePath();
+        ctx.fillStyle = '#ffb347';
+        ctx.shadowColor = '#ffb347';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.restore();
+        // Aggiorna angolo
+        r.angle += r.speed * r.direction;
+        if (r.angle > Math.PI*2) r.angle -= Math.PI*2;
+        if (r.angle < 0) r.angle += Math.PI*2;
+      }
+      // --- Astronauta ---
+      drawAstronaut(ctx, astronaut.x, astronaut.y, 1.1, astronaut.angle);
+      astronaut.x += astronaut.vx;
+      astronaut.y += astronaut.vy;
+      astronaut.angle += astronaut.vangle;
+      if (astronaut.x > w + 60) astronaut.x = -60;
+      if (astronaut.y > h + 60) astronaut.y = -60;
+      ctx.restore();
+      requestAnimationFrame(drawStars);
+    }
+    drawStars();
+
+    // === CONFIGURAZIONE SHEETDB ===
+    const SHEETDB_API = 'https://sheetdb.io/api/v1/hlmfe02ik905h';
+
+    // === FUNZIONI PER GESTIRE LA LIBRERIA CON SHEETDB ===
+
+    // Carica tutti i contenuti dal foglio Google
+    async function fetchLibrary() {
+      try {
+        const res = await fetch(SHEETDB_API);
+        const data = await res.json();
+        return data;
+      } catch (e) {
+        alert('Errore nel caricamento della libreria!');
+        return [];
+      }
+    }
+
+    // Aggiungi un nuovo contenuto al foglio Google
+    async function addContentToLibrary(content) {
+      try {
+        const res = await fetch(SHEETDB_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: content })
+        });
+        return await res.json();
+      } catch (e) {
+        alert('Errore durante il salvataggio!');
+      }
+    }
+
+    // === GESTIONE TAG E LINGUA ===
+    const TAGS_LIST = [
+      "Leadership",
+      "Comunicazione efficace",
+      "Ascolto attivo",
+      "Gestione del tempo",
+      "Gestione dello stress",
+      "Feedback",
+      "Teamwork",
+      "Problem solving",
+      "Pensiero critico",
+      "Adattabilità",
+      "Storytelling",
+      "D&I",
+      "Creatività",
+      "Intelligenza emotiva"
+    ];
+    let selectedTags = [];
+    function renderTagsPills() {
+      const container = document.getElementById('tagsPills');
+      container.innerHTML = '';
+      TAGS_LIST.forEach(tag => {
+        const pill = document.createElement('div');
+        pill.className = 'tag-pill' + (selectedTags.includes(tag) ? ' selected' : '');
+        pill.textContent = tag;
+        pill.onclick = () => {
+          if (selectedTags.includes(tag)) {
+            selectedTags = selectedTags.filter(t => t !== tag);
+          } else {
+            selectedTags.push(tag);
+          }
+          renderTagsPills();
+        };
+        container.appendChild(pill);
+      });
+      document.getElementById('tags').value = selectedTags.join(',');
+    }
+    renderTagsPills();
+
+    // Lingue principali
+    const LANGS = [
+      { code: 'it', label: 'Italiano', flag: '🇮🇹' },
+      { code: 'en', label: 'Inglese', flag: '🇬🇧' },
+      { code: 'es', label: 'Spagnolo', flag: '🇪🇸' },
+      { code: 'fr', label: 'Francese', flag: '🇫🇷' },
+      { code: 'de', label: 'Tedesco', flag: '🇩🇪' },
+      { code: 'pt', label: 'Portoghese', flag: '🇵🇹' },
+      { code: 'zh', label: 'Cinese', flag: '🇨🇳' },
+      { code: 'nl', label: 'Olandese', flag: '🇳🇱' },
+      { code: 'ja', label: 'Giapponese', flag: '🇯🇵' },
+    ];
+    let selectedLang = '';
+    function renderLangFlags() {
+      const container = document.getElementById('langFlags');
+      container.innerHTML = '';
+      LANGS.forEach(lang => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = lang.flag;
+        btn.title = lang.label;
+        btn.style = `font-size:1.6rem; background:${selectedLang===lang.code?'#00eaff':'#23234a'}; color:${selectedLang===lang.code?'#18183a':'#fff'}; border:none; border-radius:7px; padding:6px 10px; cursor:pointer; box-shadow:0 0 6px #00eaff55; outline:${selectedLang===lang.code?'2px solid #fff':'none'}; transition:background 0.2s;`;
+        btn.onclick = () => {
+          selectedLang = lang.code;
+          document.getElementById('lang').value = selectedLang;
+          renderLangFlags();
+        };
+        container.appendChild(btn);
+      });
+      document.getElementById('lang').value = selectedLang;
+    }
+    renderLangFlags();
+
+    // === GESTIONE MENU ===
+    const mainMenu = document.getElementById('mainMenu');
+    const uploadForm = document.getElementById('uploadForm');
+    const librarySection = document.getElementById('librarySection');
+    const istruzioniPage = document.getElementById('istruzioniPage');
+    document.getElementById('btnUpload').onclick = () => {
+      mainMenu.style.display = 'none';
+      uploadForm.style.display = 'block';
+      librarySection.style.display = 'none';
+      istruzioniPage.style.display = 'none';
+    };
+    document.getElementById('btnLibrary').onclick = () => {
+      mainMenu.style.display = 'none';
+      uploadForm.style.display = 'none';
+      librarySection.style.display = 'block';
+      istruzioniPage.style.display = 'none';
+      renderLibrary();
+    };
+    document.getElementById('btnIstruzioni').onclick = () => {
+      mainMenu.style.display = 'none';
+      uploadForm.style.display = 'none';
+      librarySection.style.display = 'none';
+      istruzioniPage.style.display = 'block';
+    };
+    document.getElementById('backToMenu1').onclick = () => {
+      mainMenu.style.display = 'block';
+      uploadForm.style.display = 'none';
+      librarySection.style.display = 'none';
+      istruzioniPage.style.display = 'none';
+      resetForm();
+    };
+    document.getElementById('backToMenu2').onclick = () => {
+      mainMenu.style.display = 'block';
+      uploadForm.style.display = 'none';
+      librarySection.style.display = 'none';
+      istruzioniPage.style.display = 'none';
+      document.getElementById('contentDetail').innerHTML = '';
+    };
+    document.getElementById('backToMenuIstruzioni').onclick = () => {
+      mainMenu.style.display = 'block';
+      uploadForm.style.display = 'none';
+      librarySection.style.display = 'none';
+      istruzioniPage.style.display = 'none';
+    };
+
+    function resetForm() {
+      uploadForm.reset();
+      document.getElementById('uploadError').textContent = '';
+      selectedTags = [];
+      selectedLang = '';
+      renderTagsPills();
+      renderLangFlags();
+    }
+
+    // === UPLOAD FORM: INVIO DATI ===
+    uploadForm.onsubmit = async function(e) {
+      e.preventDefault();
+      const author = document.getElementById('author').value.trim();
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const type = document.getElementById('type').value;
+      const tags = selectedTags.join(', ');
+      const link = document.getElementById('link').value.trim();
+      const lang = document.getElementById('lang').value;
+      if (!author) {
+        document.getElementById('uploadError').textContent = 'Inserisci il nome e cognome.';
+        return;
+      }
+      if (!title) {
+        document.getElementById('uploadError').textContent = 'Inserisci il titolo.';
+        return;
+      }
+      if (!description) {
+        document.getElementById('uploadError').textContent = 'Inserisci una descrizione.';
+        return;
+      }
+      if (!type) {
+        document.getElementById('uploadError').textContent = 'Seleziona una tipologia.';
+        return;
+      }
+      if (!lang) {
+        document.getElementById('uploadError').textContent = 'Seleziona la lingua.';
+        return;
+      }
+      if (link && !/^https?:\/\//i.test(link)) {
+        document.getElementById('uploadError').textContent = 'Il link deve iniziare con http:// o https://';
+        return;
+      }
+      const content = {
+        author,
+        titolo: title,
+        descrizione: description,
+        tipo: type,
+        tags,
+        lang,
+        link,
+        createdAt: new Date().toISOString()
+      };
+      await addContentToLibrary(content);
+      resetForm();
+      mainMenu.style.display = 'block';
+      uploadForm.style.display = 'none';
+      renderLibrary();
+    };
+
+    // === VISUALIZZAZIONE LIBRERIA ===
+    async function renderLibrary() {
+      const contentList = document.getElementById('contentList');
+      contentList.innerHTML = '<div style="color:#fff; text-align:center;">Caricamento in corso...</div>';
+      const library = await fetchLibrary();
+      if (!library.length) {
+        contentList.innerHTML = '<div style="color:#fff; text-align:center;">Nessun contenuto presente.</div>';
+        return;
+      }
+      contentList.innerHTML = '';
+      library.forEach((item, idx) => {
+        // Thumb
+        let thumbHtml = '';
+        if (item.link) {
+          const ytThumb = getYoutubeThumbnail(item.link);
+          if (ytThumb) {
+            thumbHtml = `<img src="${ytThumb}" alt="Anteprima YouTube" class="card-thumb">`;
+          } else {
+            thumbHtml = `<div class="card-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#00eaff;">🔗</div>`;
+          }
+        } else {
+          thumbHtml = `<div class="card-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#00eaff;">📄</div>`;
+        }
+        // Bandierina lingua
+        const langObj = LANGS.find(l => l.code === item.lang);
+        const langFlag = langObj ? `<span title="${langObj.label}" style="font-size:1.1rem;">${langObj.flag}</span>` : '';
+        // Tag
+        const tagLabels = item.tags || '';
+        // Card
+        const card = document.createElement('li');
+        card.className = 'content-card';
+        card.innerHTML = `
+          ${thumbHtml}
+          <div class="card-info">
+            <div>
+              <div class="card-title">${item.titolo || ''}</div>
+              <div class="card-meta">${langFlag} <span>${item.tipo || ''}</span></div>
+              <div class="card-tags">${tagLabels}</div>
+            </div>
+          </div>
+        `;
+        card.onclick = () => showDetail(item);
+        contentList.appendChild(card);
+      });
+    }
+
+    function getYoutubeThumbnail(link) {
+      const regExp = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/;
+      const match = link.match(regExp);
+      if (match && match[1]) {
+        return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+      }
+      return null;
+    }
+
+    function showDetail(item) {
+      const detail = document.getElementById('contentDetail');
+      let preview = '';
+      if (item.link) {
+        const ytThumb = getYoutubeThumbnail(item.link);
+        if (ytThumb) {
+          preview = `<img src="${ytThumb}" alt="Anteprima YouTube" style="max-width:300px;" />`;
+        } else {
+          preview = `<a href="${item.link}" target="_blank" rel="noopener noreferrer">Vai al link</a>`;
+        }
+      }
+      // Bandierina lingua
+      const langObj = LANGS.find(l => l.code === item.lang);
+      const langFlag = langObj ? `<span title="${langObj.label}" style="font-size:1.5rem; margin-right:7px;">${langObj.flag}</span>` : '';
+      detail.innerHTML = `
+        <div class="detail">
+          <button onclick="closeDetail()">Torna indietro</button>
+          <h2>${langFlag}${item.titolo}</h2>
+          <div><strong>Caricato da:</strong> ${item.author || 'Sconosciuto'}</div>
+          <div><strong>Tipologia:</strong> ${item.tipo}</div>
+          <div><strong>Lingua:</strong> ${langObj ? langObj.flag + ' ' + langObj.label : 'Non specificata'}</div>
+          <div><strong>Tag:</strong> ${item.tags}</div>
+          <div><strong>Descrizione:</strong> ${item.descrizione}</div>
+          <div class="preview">${preview}</div>
+          <div style="font-size:12px;color:#00eaff;margin-top:10px;">Caricato il: ${item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}</div>
+        </div>
+      `;
+    }
+
+    function closeDetail() {
+      document.getElementById('contentDetail').innerHTML = '';
+    }
+
+    // Inizializza la lista tag nei filtri (opzionale)
+    function renderFilterTags() {
+      const filterTag = document.getElementById('filterTag');
+      filterTag.innerHTML = '<option value="">Tutti i tag</option>';
+      TAGS_LIST.forEach(tag => {
+        const opt = document.createElement('option');
+        opt.value = tag;
+        opt.textContent = tag;
+        filterTag.appendChild(opt);
+      });
+    }
+    renderFilterTags();
+
+    // Filtro base (puoi espandere per filtrare davvero)
+    function applyFilters() {
+      renderLibrary();
+      document.getElementById('contentDetail').innerHTML = '';
+    }
+  </script>
+</body>
+</html> 
