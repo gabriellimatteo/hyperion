@@ -811,10 +811,10 @@
     };
 
     // === VISUALIZZAZIONE LIBRERIA ===
-    async function renderLibrary() {
+    async function renderLibrary(filteredData) {
       const contentList = document.getElementById('contentList');
       contentList.innerHTML = '<div style="color:#fff; text-align:center;">Caricamento in corso...</div>';
-      const library = await fetchLibrary();
+      const library = filteredData || await fetchLibrary();
       if (!library.length) {
         contentList.innerHTML = '<div style="color:#fff; text-align:center;">Nessun contenuto presente.</div>';
         return;
@@ -914,9 +914,25 @@
     }
     renderFilterTags();
 
-    // Filtro base (puoi espandere per filtrare davvero)
-    function applyFilters() {
-      renderLibrary();
+    // Filtro base (ora funzionante)
+    async function applyFilters() {
+      const search = document.getElementById('filterSearch').value.trim().toLowerCase();
+      const type = document.getElementById('filterType').value;
+      const tag = document.getElementById('filterTag').value;
+      const allData = await fetchLibrary();
+      const filtered = allData.filter(item => {
+        // Filtro ricerca su titolo e descrizione
+        const matchSearch =
+          !search ||
+          (item.titolo && item.titolo.toLowerCase().includes(search)) ||
+          (item.descrizione && item.descrizione.toLowerCase().includes(search));
+        // Filtro tipologia
+        const matchType = !type || (item.tipo === type);
+        // Filtro tag (controlla se il tag selezionato è presente tra i tag dell'item)
+        const matchTag = !tag || (item.tags && item.tags.split(',').map(t => t.trim()).includes(tag));
+        return matchSearch && matchType && matchTag;
+      });
+      renderLibrary(filtered);
       document.getElementById('contentDetail').innerHTML = '';
     }
   </script>
