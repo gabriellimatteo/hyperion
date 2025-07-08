@@ -91,9 +91,9 @@
       list-style: none;
     }
     .content-card {
-      background: rgba(44, 44, 88, 0.92);
-      border-radius: 13px;
-      box-shadow: 0 2px 12px #0003;
+      background: #18183a;
+      border-radius: 10px;
+      box-shadow: 0 2px 16px #0008;
       padding: 0;
       overflow: hidden;
       position: relative;
@@ -102,47 +102,48 @@
       display: flex;
       flex-direction: column;
       min-height: 260px;
+      border: none;
     }
     .content-card:hover {
-      transform: scale(1.04);
-      box-shadow: 0 6px 32px #00eaff55;
+      transform: scale(1.08);
+      box-shadow: 0 8px 32px #00eaff99;
       z-index: 2;
     }
     .card-thumb {
       width: 100%;
-      height: 120px;
+      height: 180px;
       object-fit: cover;
       background: #23234a;
       display: block;
+      border-bottom: 2px solid #00eaff44;
     }
     .card-info {
-      padding: 13px 12px 10px 12px;
+      padding: 10px 10px 8px 10px;
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-end;
+      background: linear-gradient(0deg, #18183a 90%, #18183a00 100%);
+      min-height: 80px;
     }
     .card-title {
       font-size: 1.08rem;
       font-weight: bold;
       color: #fff;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       text-shadow: 0 0 6px #00eaff33;
       min-height: 36px;
+      text-align: center;
     }
-    .card-meta {
-      font-size: 0.98rem;
-      color: #b6aaff;
-      margin-bottom: 2px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
+    .card-meta, .card-tags, .card-info a {
+      display: none; /* Mostra solo titolo e copertina */
     }
-    .card-tags {
-      font-size: 0.85rem;
-      color: #00eaff;
-      margin-bottom: 4px;
-      min-height: 18px;
+    .content-card:hover .card-meta,
+    .content-card:hover .card-tags,
+    .content-card:hover .card-info a {
+      display: block;
+      text-align: center;
+      margin-top: 4px;
     }
     .card-remove {
       background: #ff4f4f;
@@ -229,6 +230,33 @@
       font-weight: bold;
       box-shadow: 0 0 8px #ffb34788;
     }
+    .detail-card {
+      grid-column: 1 / -1 !important;
+      background: #23234ae6;
+      box-shadow: 0 4px 32px #00eaff33;
+      border: 2px solid #00eaff55;
+      margin-bottom: 18px;
+      z-index: 10;
+      position: relative;
+      color: #fff;
+    }
+    .detail-card * {
+      color: #fff !important;
+    }
+    .detail-card button {
+      background: #ff4f4f;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      margin-top: 7px;
+      transition: background 0.2s;
+    }
+    .detail-card button:hover {
+      background: #ff0000;
+    }
   </style>
 </head>
 <body>
@@ -262,6 +290,10 @@
       </select>
       <label for="tags" style="color:#b6aaff; font-family:'Orbitron',Arial,sans-serif; margin-top:10px;">Tag (seleziona uno o più):</label>
       <div id="tagsPills" style="display:flex; flex-wrap:wrap; gap:7px; margin-bottom:10px;"></div>
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <input type="text" id="customTagInput" placeholder="Aggiungi un tag personalizzato..." style="flex:1;"/>
+        <button type="button" id="addCustomTagBtn" style="width:auto; padding:8px 14px;">Aggiungi</button>
+      </div>
       <input type="hidden" id="tags" />
       <!-- Selezione lingua -->
       <div style="margin-bottom:10px;">
@@ -668,9 +700,40 @@
         };
         container.appendChild(pill);
       });
+      // Aggiungi le pillole dei tag personalizzati
+      selectedTags.forEach(tag => {
+        if (!TAGS_LIST.includes(tag)) {
+          const pill = document.createElement('div');
+          pill.className = 'tag-pill altro selected';
+          pill.textContent = tag;
+          pill.onclick = () => {
+            selectedTags = selectedTags.filter(t => t !== tag);
+            renderTagsPills();
+          };
+          container.appendChild(pill);
+        }
+      });
       document.getElementById('tags').value = selectedTags.join(',');
     }
     renderTagsPills();
+
+    // Gestione tag personalizzato
+    document.getElementById('addCustomTagBtn').onclick = function() {
+      const input = document.getElementById('customTagInput');
+      const newTag = input.value.trim();
+      if (newTag && !selectedTags.includes(newTag)) {
+        selectedTags.push(newTag);
+        renderTagsPills();
+        input.value = '';
+      }
+    };
+    // Permetti invio con Enter
+    document.getElementById('customTagInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('addCustomTagBtn').click();
+      }
+    });
 
     // Lingue principali
     const LANGS = [
@@ -833,28 +896,16 @@
         } else {
           thumbHtml = `<div class="card-thumb" style="display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#00eaff;">📄</div>`;
         }
-        // Bandierina lingua
-        const langObj = LANGS.find(l => l.code === item.lang);
-        const langFlag = langObj ? `<span title="${langObj.label}" style="font-size:1.1rem;">${langObj.flag}</span>` : '';
-        // Tag
-        const tagLabels = item.tags || '';
-        // Link (mostra sempre se presente)
-        const linkHtml = item.link ? `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:6px;font-size:1.1rem;color:#00eaff;text-decoration:underline;">🔗 Link</a>` : '';
-        // Card
+        // Card solo con copertina e titolo
         const card = document.createElement('li');
         card.className = 'content-card';
         card.innerHTML = `
           ${thumbHtml}
           <div class="card-info">
-            <div>
-              <div class="card-title">${item.titolo || ''}</div>
-              <div class="card-meta">${langFlag} <span>${item.tipo || ''}</span></div>
-              <div class="card-tags">${tagLabels}</div>
-              ${linkHtml}
-            </div>
+            <div class="card-title">${item.titolo || ''}</div>
           </div>
         `;
-        card.onclick = () => showDetail(item);
+        card.onclick = () => showDetail(item, idx);
         contentList.appendChild(card);
       });
     }
@@ -868,37 +919,46 @@
       return null;
     }
 
-    function showDetail(item) {
-      const detail = document.getElementById('contentDetail');
+    function showDetail(item, idx) {
+      // Rimuovi eventuali dettagli già aperti
+      const contentList = document.getElementById('contentList');
+      const oldDetail = document.getElementById('inlineDetail');
+      if (oldDetail) oldDetail.remove();
+
+      // Crea la scheda dettaglio
+      const detail = document.createElement('li');
+      detail.id = 'inlineDetail';
+      detail.className = 'content-card detail-card';
       let preview = '';
       if (item.link) {
         const ytThumb = getYoutubeThumbnail(item.link);
         if (ytThumb) {
-          preview = `<img src="${ytThumb}" alt="Anteprima YouTube" style="max-width:300px;" /><br>`;
+          preview = `<img src="${ytThumb}" alt="Anteprima YouTube" style="max-width:100%;border-radius:10px;" /><br>`;
         }
-        // Mostra sempre il link cliccabile sotto la preview
         preview += `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;font-size:1.13rem;color:#00eaff;text-decoration:underline;">🔗 Vai al link</a>`;
       }
-      // Bandierina lingua
       const langObj = LANGS.find(l => l.code === item.lang);
       const langFlag = langObj ? `<span title="${langObj.label}" style="font-size:1.5rem; margin-right:7px;">${langObj.flag}</span>` : '';
       detail.innerHTML = `
-        <div class="detail">
-          <button onclick="closeDetail()">Torna indietro</button>
-          <h2>${langFlag}${item.titolo}</h2>
+        <div style="padding:18px 12px;">
+          <button onclick="closeDetail()" style="float:right;margin-left:10px;">Chiudi ✖</button>
+          <h2 style="margin-top:0;">${langFlag}${item.titolo}</h2>
           <div><strong>Caricato da:</strong> ${item.author || 'Sconosciuto'}</div>
           <div><strong>Tipologia:</strong> ${item.tipo}</div>
           <div><strong>Lingua:</strong> ${langObj ? langObj.flag + ' ' + langObj.label : 'Non specificata'}</div>
           <div><strong>Tag:</strong> ${item.tags}</div>
           <div><strong>Descrizione:</strong> ${item.descrizione}</div>
-          <div class="preview">${preview}</div>
+          <div class="preview" style="margin-top:10px;">${preview}</div>
           <div style="font-size:12px;color:#00eaff;margin-top:10px;">Caricato il: ${item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}</div>
         </div>
       `;
+      // Inserisci la scheda subito dopo la card cliccata
+      contentList.insertBefore(detail, contentList.children[idx + 1]);
     }
 
     function closeDetail() {
-      document.getElementById('contentDetail').innerHTML = '';
+      const oldDetail = document.getElementById('inlineDetail');
+      if (oldDetail) oldDetail.remove();
     }
 
     // Inizializza la lista tag nei filtri (opzionale)
